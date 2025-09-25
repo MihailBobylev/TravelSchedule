@@ -9,7 +9,7 @@ import SwiftUI
 import OpenAPIURLSession
 
 struct ContentView: View {
-    private let apikey = "deb309ef-bb5d-4fa4-bc10-72b1697f3b00"
+    private let apikey = ""
     
     var body: some View {
         VStack {

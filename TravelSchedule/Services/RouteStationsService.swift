@@ -14,7 +14,7 @@ protocol RouteStationsServiceProtocol {
     func getRouteStations(uid: String) async throws -> ThreadStationsResponse
 }
 
-final class RouteStationsService: RouteStationsServiceProtocol {
+final class RouteStationsService: APIService, RouteStationsServiceProtocol {
     private let client: Client
     private let apikey: String
     

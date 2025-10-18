@@ -15,7 +15,7 @@ protocol AllStationsServiceProtocol {
     func getAllStations() async throws -> AllStationsResponse
 }
 
-final class AllStationsService: AllStationsServiceProtocol {
+final class AllStationsService: APIService, AllStationsServiceProtocol {
     private let decoder = JSONDecoder()
     private let client: Client
     private let apikey: String

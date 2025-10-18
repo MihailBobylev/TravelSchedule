@@ -14,7 +14,7 @@ protocol CarrierInfoServiceProtocol {
     func getCarrierInfo(code: String, system: String?) async throws -> CarrierResponse
 }
 
-final class CarrierInfoService: CarrierInfoServiceProtocol {
+final class CarrierInfoService: APIService, CarrierInfoServiceProtocol {
     private let client: Client
     private let apikey: String
     

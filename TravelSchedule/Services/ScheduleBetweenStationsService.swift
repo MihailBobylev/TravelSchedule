@@ -11,10 +11,10 @@ import OpenAPIURLSession
 typealias Schedule = Components.Schemas.Segments
 
 protocol ScheduleBetweenStationsServiceProtocol {
-    func getScheduleBetweenStations(from: String, to: String) async throws -> Schedule
+    func getScheduleBetweenStations(from: String, to: String, transfers: Bool) async throws -> Schedule
 }
 
-final class ScheduleBetweenStationsService: ScheduleBetweenStationsServiceProtocol {
+final class ScheduleBetweenStationsService: APIService, ScheduleBetweenStationsServiceProtocol {
     private let client: Client
     private let apikey: String
     
@@ -23,11 +23,13 @@ final class ScheduleBetweenStationsService: ScheduleBetweenStationsServiceProtoc
         self.apikey = apikey
     }
     
-    func getScheduleBetweenStations(from: String, to: String) async throws -> Schedule {
+    func getScheduleBetweenStations(from: String, to: String, transfers: Bool) async throws -> Schedule {
         let response = try await client.getScheduleBetweenStations(query: .init(
             apikey: apikey,
             from: from,
-            to: to)
+            to: to,
+            transport_types: "train",
+            transfers: transfers)
         )
         return try response.ok.body.json
     }

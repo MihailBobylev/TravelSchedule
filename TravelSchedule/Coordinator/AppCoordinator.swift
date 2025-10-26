@@ -12,21 +12,30 @@ import SwiftUI
 final class AppCoordinator: ObservableObject {
     private(set) var tripSelection = TripSelection()
     private(set) var filtersModel = FiltersModel()
-    let navigationController = UINavigationController()
+    private var storyService = StoryService()
+    private var homeNavigationController: UINavigationController?
+    private var settingsNavigationController: UINavigationController?
+    private var tabBarController: UITabBarController?
     var servicesProvider: ServicesProvider?
-
-    func start() {
-        guard let servicesProvider else { return }
+    
+    func makeTabBarController() -> UITabBarController {
+        guard let servicesProvider else { return UITabBarController() }
         
         let tabBarController = UITabBarController()
         
         let homeView = HomeView(servicesProvider: servicesProvider, tripSelection: tripSelection)
             .environmentObject(self)
+            .environmentObject(storyService)
         let settingsView = SettingsView()
             .environmentObject(self)
         
         let homeNavController = UINavigationController(rootViewController: UIHostingController(rootView: homeView))
+        homeNavController.setNavigationBarHidden(true, animated: false)
+        homeNavigationController = homeNavController
+        
         let settingsNavController = UINavigationController(rootViewController: UIHostingController(rootView: settingsView))
+        settingsNavController.setNavigationBarHidden(true, animated: false)
+        settingsNavigationController = settingsNavController
         
         let homeIcon = UIImage(resource: .icSchedule)
         let settingsIcon = UIImage(resource: .icSettings)
@@ -54,23 +63,27 @@ final class AppCoordinator: ObservableObject {
         topBorder.autoresizingMask = [.flexibleWidth, .flexibleBottomMargin]
         tabBar.addSubview(topBorder)
         
-        navigationController.setViewControllers([tabBarController], animated: false)
+        self.tabBarController = tabBarController
+        
+        return tabBarController
     }
-    
+
     func showChoosingCityView(type: TripSelectionType) {
         guard let servicesProvider else { return }
+        
         tripSelection.currentSelection = type
         let view = ChoosingCityView(servicesProvider: servicesProvider, tripSelection: tripSelection)
             .environmentObject(self)
         let viewController = UIHostingController(rootView: view)
-        navigationController.pushViewController(viewController, animated: true)
+        viewController.hidesBottomBarWhenPushed = true
+        homeNavigationController?.pushViewController(viewController, animated: true)
     }
     
     func showChoosingStationView(settlement: Components.Schemas.Settlement) {
         let view = ChoosingStationView(stations: settlement.stations ?? [], tripSelection: tripSelection)
             .environmentObject(self)
         let viewController = UIHostingController(rootView: view)
-        navigationController.pushViewController(viewController, animated: true)
+        homeNavigationController?.pushViewController(viewController, animated: true)
     }
     
     func showScheduleView() {
@@ -80,28 +93,49 @@ final class AppCoordinator: ObservableObject {
                                 filtersModel: filtersModel)
             .environmentObject(self)
         let viewController = UIHostingController(rootView: view)
-        navigationController.pushViewController(viewController, animated: true)
+        viewController.hidesBottomBarWhenPushed = true
+        homeNavigationController?.pushViewController(viewController, animated: true)
     }
     
     func showFiltersView() {
         let view = FiltersView(filtersModel: filtersModel)
             .environmentObject(self)
         let viewController = UIHostingController(rootView: view)
-        navigationController.pushViewController(viewController, animated: true)
+        homeNavigationController?.pushViewController(viewController, animated: true)
     }
     
-    func showCarrierDetailsView() {
-        let view = CarrierDetailsView()
-            .environmentObject(self)
+    func showCarrierDetailsView(code: Int) {
+        guard let servicesProvider else { return }
+        let view = CarrierDetailsView(servicesProvider: servicesProvider, code: code)
         let viewController = UIHostingController(rootView: view)
-        navigationController.pushViewController(viewController, animated: true)
+        homeNavigationController?.pushViewController(viewController, animated: true)
+    }
+    
+    func showUserAgreementView() {
+        let view = UserAgreementView()
+        let viewController = UIHostingController(rootView: view)
+        viewController.hidesBottomBarWhenPushed = true
+        settingsNavigationController?.pushViewController(viewController, animated: true)
+    }
+    
+    func showStoryDetailsView(storiesPack: StoryPack) {
+        let view = StoryDetailsView(storiesPack: storiesPack)
+            .environmentObject(self)
+            .environmentObject(storyService)
+        let viewController = UIHostingController(rootView: view)
+        viewController.modalPresentationStyle = .fullScreen
+        homeNavigationController?.present(viewController, animated: true)
+    }
+    
+    func dismiss() {
+        homeNavigationController?.topViewController?.dismiss(animated: true, completion: nil)
     }
     
     func popViewController() {
-        navigationController.popViewController(animated: true)
+        homeNavigationController?.popViewController(animated: true)
     }
     
     func popToRoot() {
-        navigationController.popToRootViewController(animated: true)
+        homeNavigationController?.popToRootViewController(animated: true)
     }
 }

@@ -11,9 +11,10 @@ import UIKit
 struct CoordinatorRootView: UIViewControllerRepresentable {
     @EnvironmentObject var appCoordinator: AppCoordinator
 
-    func makeUIViewController(context: Context) -> UINavigationController {
-        return appCoordinator.navigationController
+    func makeUIViewController(context: Context) -> UITabBarController {
+        let tabBarController = appCoordinator.makeTabBarController()
+        return tabBarController
     }
 
-    func updateUIViewController(_ uiViewController: UINavigationController, context: Context) {}
+    func updateUIViewController(_ uiViewController: UITabBarController, context: Context) {}
 }

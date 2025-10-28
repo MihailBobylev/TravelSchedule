@@ -54,7 +54,9 @@ struct ScheduleView: View {
                             .listRowSeparator(.hidden)
                             .listRowInsets(.init(top: 0, leading: 16.dhs, bottom: 8.dvs, trailing: 16.dhs))
                             .onTapGesture {
-                                coordinator.showCarrierDetailsView()
+                                if let code = schedule.carrier.code {
+                                    coordinator.showCarrierDetailsView(code: code)
+                                }
                             }
                     }
                     .listStyle(.plain)
@@ -106,8 +108,3 @@ struct ScheduleView: View {
         }
     }
 }
-
-//#Preview {
-//    ScheduleView(servicesProvider: ServicesProvider(apikey: ""),
-//                 tripSelection: TripSelection())
-//}

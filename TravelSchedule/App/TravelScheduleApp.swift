@@ -9,6 +9,7 @@ import SwiftUI
 
 @main
 struct TravelScheduleApp: App {
+    @AppStorage("isDarkMode") private var isDarkMode = false
     @StateObject private var appCoordinator = AppCoordinator()
     @State private var showSplash = true
     @State private var initializationError: Error? = nil
@@ -32,6 +33,7 @@ struct TravelScheduleApp: App {
             } else {
                 CoordinatorRootView()
                     .environmentObject(appCoordinator)
+                    .preferredColorScheme(isDarkMode ? .dark : .light)
                     .ignoresSafeArea(.all)
             }
         }
@@ -57,12 +59,11 @@ private extension TravelScheduleApp {
     
     func initializeServices() async {
         do {
-            let provider = try ServicesProvider(apikey: "deb309ef-bb5d-4fa4-bc10-72b1697f3b00")
+            let provider = try ServicesProvider(apikey: "")
             await MainActor.run {
                 appCoordinator.servicesProvider = provider
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
                     self.showSplash = false
-                    appCoordinator.start()
                 }
             }
         } catch {

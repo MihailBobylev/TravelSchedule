@@ -10,6 +10,7 @@ import OpenAPIURLSession
 
 struct HomeView: View {
     @EnvironmentObject var coordinator: AppCoordinator
+    @EnvironmentObject var storyService: StoryService
     private let viewModel: HomeViewModel
     
     init(servicesProvider: ServicesProvider, tripSelection: TripSelection) {
@@ -17,7 +18,12 @@ struct HomeView: View {
     }
     
     var body: some View {
-        VStack {
+        VStack(spacing: 44.dvs) {
+            StoriesSectionView(storyPacks: storyService.stories) { pack in
+                coordinator.showStoryDetailsView(storiesPack: pack)
+            }
+            .padding(.top, 20.dvs)
+            
             DestinationView(tripSelection: viewModel.tripSelection, actionFrom: {
                 coordinator.showChoosingCityView(type: .from)
             }, actionTo: {
@@ -32,7 +38,3 @@ struct HomeView: View {
         .navigationBarHidden(true)
     }
 }
-
-//#Preview {
-    //HomeView(servicesProvider: )
-//}

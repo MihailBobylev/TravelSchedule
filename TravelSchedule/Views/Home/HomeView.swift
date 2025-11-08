@@ -13,8 +13,8 @@ struct HomeView: View {
     @EnvironmentObject var storyService: StoryService
     private let viewModel: HomeViewModel
     
-    init(servicesProvider: ServicesProvider, tripSelection: TripSelection) {
-        self.viewModel = HomeViewModel(servicesProvider: servicesProvider, tripSelection: tripSelection)
+    init(tripSelection: TripSelection) {
+        self.viewModel = HomeViewModel(tripSelection: tripSelection)
     }
     
     var body: some View {

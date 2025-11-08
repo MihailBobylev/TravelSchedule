@@ -11,11 +11,11 @@ import Foundation
 
 typealias AllStationsResponse = Components.Schemas.AllStationsResponse
 
-protocol AllStationsServiceProtocol {
+protocol AllStationsServiceProtocol: Sendable {
     func getAllStations() async throws -> AllStationsResponse
 }
 
-final class AllStationsService: APIService, AllStationsServiceProtocol {
+actor AllStationsService: APIService, AllStationsServiceProtocol {
     private let decoder = JSONDecoder()
     private let client: Client
     private let apikey: String
@@ -27,12 +27,10 @@ final class AllStationsService: APIService, AllStationsServiceProtocol {
     
     func getAllStations() async throws -> AllStationsResponse {
         let response = try await client.getAllStations(query: .init(apikey: apikey))
-        
         let responseBody = try response.ok.body.html
         
         let limit = 50 * 1024 * 1024 // 50Mb
         let fullData = try await Data(collecting: responseBody, upTo: limit)
-        
         let allStations = try decoder.decode(AllStationsResponse.self, from: fullData)
         
         return allStations

@@ -106,7 +106,8 @@ struct CarrierDetailsView: View {
         }
         .padding(.top, 16.dvs)
         .navigationTitle("Информация о перевозчике")
-        .onAppear { viewModel.fetchCarrierInfo() }
-        .onDisappear { viewModel.cancelFetching() }
+        .task {
+            await viewModel.fetchCarrierInfo()
+        }
     }
 }

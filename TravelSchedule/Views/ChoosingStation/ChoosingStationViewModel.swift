@@ -8,7 +8,9 @@
 import Foundation
 import OpenAPIURLSession
 
-@Observable final class ChoosingStationViewModel {
+@MainActor
+@Observable
+final class ChoosingStationViewModel {
     let tripSelection: TripSelection
     
     let stations: [Components.Schemas.Station]

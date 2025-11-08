@@ -64,8 +64,9 @@ struct ChoosingCityView: View {
         .onChange(of: searchText) { oldValue, newValue in
             viewModel.searchText = newValue
         }
-        .onAppear { viewModel.fetchAllStations() }
-        .onDisappear { viewModel.cancelFetching() }
+        .task {
+            await viewModel.fetchAllStations()
+        }
     }
 }
 

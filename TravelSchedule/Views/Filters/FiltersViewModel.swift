@@ -8,7 +8,9 @@
 import Foundation
 import SwiftUI
 
-@Observable final class FiltersViewModel: ObservableObject {
+@MainActor
+@Observable
+final class FiltersViewModel: ObservableObject {
     private var filtersModel: FiltersModel
     let localFiltersModel: FiltersModel
     

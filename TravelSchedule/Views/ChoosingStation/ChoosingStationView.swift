@@ -44,16 +44,10 @@ struct ChoosingStationView: View {
         .navigationBarHidden(false)
         .navigationTitle("Выбор станции")
         .searchable(text: $searchText, prompt: "Введите запрос")
-        .onChange(of: searchText) { oldValue, newValue in
-            searchTask?.cancel()
-
-            searchTask = Task {
-                try? await Task.sleep(nanoseconds: 300_000_000)
-                guard !Task.isCancelled else { return }
-
-                await MainActor.run {
-                    viewModel.searchText = newValue
-                }
+        .task(id: searchText) {
+            try? await Task.sleep(nanoseconds: 300_000_000)
+            await MainActor.run {
+                viewModel.searchText = searchText
             }
         }
     }

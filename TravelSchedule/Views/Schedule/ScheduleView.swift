@@ -100,11 +100,8 @@ struct ScheduleView: View {
             }
         }
         .navigationBarHidden(false)
-        .onAppear {
-            viewModel.fetchScheduleBetweenStations()
-        }
-        .onDisappear {
-            viewModel.cancelFetching()
+        .task {
+            await viewModel.fetchScheduleBetweenStations()
         }
     }
 }

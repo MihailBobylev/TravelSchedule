@@ -19,11 +19,9 @@ final class AppCoordinator: ObservableObject {
     var servicesProvider: ServicesProvider?
     
     func makeTabBarController() -> UITabBarController {
-        guard let servicesProvider else { return UITabBarController() }
-        
         let tabBarController = UITabBarController()
         
-        let homeView = HomeView(servicesProvider: servicesProvider, tripSelection: tripSelection)
+        let homeView = HomeView(tripSelection: tripSelection)
             .environmentObject(self)
             .environmentObject(storyService)
         let settingsView = SettingsView()

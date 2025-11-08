@@ -7,12 +7,12 @@
 
 import Foundation
 
+@MainActor
+@Observable
 final class HomeViewModel: ObservableObject {
-    let servicesProvider: ServicesProvider
     let tripSelection: TripSelection
     
-    init(servicesProvider: ServicesProvider, tripSelection: TripSelection) {
-        self.servicesProvider = servicesProvider
+    init(tripSelection: TripSelection) {
         self.tripSelection = tripSelection
     }
 }

@@ -10,11 +10,11 @@ import OpenAPIURLSession
 
 typealias Carrier = Components.Schemas.Carrier
 
-protocol CarrierInfoServiceProtocol {
+protocol CarrierInfoServiceProtocol: Sendable {
     func getCarrierInfo(code: Int) async throws -> Carrier?
 }
 
-final class CarrierInfoService: APIService, CarrierInfoServiceProtocol {
+actor CarrierInfoService: APIService, CarrierInfoServiceProtocol {
     private let client: Client
     private let apikey: String
     

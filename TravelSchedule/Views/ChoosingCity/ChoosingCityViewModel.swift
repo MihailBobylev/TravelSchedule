@@ -8,20 +8,22 @@
 import Foundation
 import OpenAPIRuntime
 
-@Observable final class ChoosingCityViewModel {
-    private var currentTask: Task<Void, Never>?
-    private var searchTask: Task<Void, Never>?
+@MainActor
+@Observable
+final class ChoosingCityViewModel {
+    private let servicesProvider: ServicesProvider
     private var hasFetched = false
+    private var filterTask: Task<Void, Never>?
     let tripSelection: TripSelection
     
     var settlements: [Components.Schemas.Settlement] = []
     var filteredSettlements: [Components.Schemas.Settlement] = []
-    
     var searchText: String = "" {
         didSet {
             scheduleFiltering()
         }
     }
+    
     var isLoading = false
     var requestError: ErrorType = .none
     
@@ -29,90 +31,63 @@ import OpenAPIRuntime
         !isLoading && filteredSettlements.isEmpty && requestError == .none
     }
     
-    private let servicesProvider: ServicesProvider
-    
     init(servicesProvider: ServicesProvider, tripSelection: TripSelection) {
         self.servicesProvider = servicesProvider
         self.tripSelection = tripSelection
     }
     
-    deinit {
-        currentTask?.cancel()
-        searchTask?.cancel()
-    }
-    
-    func fetchAllStations() {
+    func fetchAllStations() async {
         guard !hasFetched else { return }
         hasFetched = true
-        currentTask?.cancel()
         isLoading = true
         
-        currentTask = Task {
-            do {
-                let allStations = try await servicesProvider.allStationService.getAllStations()
-                guard !Task.isCancelled else { return }
-                
-                let settlements: [Components.Schemas.Settlement] = allStations.countries?
-                    .flatMap { $0.regions ?? [] }
-                    .flatMap { $0.settlements ?? [] }
-                    .compactMap { settlement in
-                        settlement.title != "" ? settlement : nil
-                    } ?? []
-                
-                await MainActor.run {
-                    self.settlements = settlements
-                    self.filteredSettlements = settlements
-                    self.isLoading = false
-                }
-                
-                print("Successfully fetched all stations: \(settlements.count)")
-            } catch {
-                await MainActor.run { isLoading = false }
-                
-                guard !Task.isCancelled else {
-                    print("Fetch cancelled")
-                    return
-                }
-                
-                let errorType: ErrorType
-                if let clientError = error as? OpenAPIRuntime.ClientError,
-                   let urlError = clientError.underlyingError as? URLError,
-                   urlError.code == .notConnectedToInternet {
-                    errorType = .noInternet
-                } else {
-                    errorType = .serverError
-                }
-                
-                await MainActor.run { requestError = errorType }
+        do {
+            let allStations = try await servicesProvider.allStationService.getAllStations()
+            let settlements: [Components.Schemas.Settlement] = allStations.countries?
+                .flatMap { $0.regions ?? [] }
+                .flatMap { $0.settlements ?? [] }
+                .compactMap { settlement in
+                    settlement.title?.isEmpty == false ? settlement : nil
+                } ?? []
+            
+            self.settlements = settlements
+            self.filteredSettlements = settlements
+            self.isLoading = false
+            print("Successfully fetched all stations: \(settlements.count)")
+        } catch {
+            self.isLoading = false
+            
+            let errorType: ErrorType
+            if let clientError = error as? OpenAPIRuntime.ClientError,
+               let urlError = clientError.underlyingError as? URLError,
+               urlError.code == .notConnectedToInternet {
+                errorType = .noInternet
+            } else {
+                errorType = .serverError
             }
+            
+            self.requestError = errorType
         }
     }
     
-    func cancelFetching() {
-        currentTask?.cancel()
-        searchTask?.cancel()
-        self.isLoading = false
-    }
-    
     private func scheduleFiltering() {
-        searchTask?.cancel()
-        
-        searchTask = Task { [weak self] in
+        filterTask?.cancel()
+        filterTask = Task { [settlements, searchText] in
             try? await Task.sleep(nanoseconds: 300_000_000)
-            guard !Task.isCancelled, let self else { return }
-
-            let query = self.searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !Task.isCancelled else { return }
+            
+            let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+            
+            let filtered: [Components.Schemas.Settlement]
             if query.isEmpty {
-                await MainActor.run { self.filteredSettlements = self.settlements }
-                return
+                filtered = settlements
+            } else {
+                filtered = settlements.filter {
+                    guard let title = $0.title else { return false }
+                    return title.range(of: query, options: [.caseInsensitive, .diacriticInsensitive]) != nil
+                }
             }
-
-            let filtered = self.settlements.filter {
-                guard let title = $0.title else { return false }
-                return title.range(of: query, options: [.caseInsensitive, .diacriticInsensitive]) != nil
-            }
-
-            await MainActor.run { self.filteredSettlements = filtered }
+            self.filteredSettlements = filtered
         }
     }
 }

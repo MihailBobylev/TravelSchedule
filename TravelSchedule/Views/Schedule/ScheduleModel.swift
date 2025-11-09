@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct ScheduleModel: Hashable {
+struct ScheduleModel: Hashable, Sendable {
     let carrier: Components.Schemas.Carrier
     let startDate: String
     

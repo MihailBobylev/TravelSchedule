@@ -22,10 +22,8 @@ struct TravelScheduleApp: App {
         WindowGroup {
             if showSplash {
                 SplashView()
-                    .onAppear {
-                        Task {
-                            await initializeServices()
-                        }
+                    .task {
+                        await initializeServices()
                     }
             } else if let error = initializationError {
                 Text("Ошибка инициализации: \(error.localizedDescription)")
@@ -60,16 +58,16 @@ private extension TravelScheduleApp {
     func initializeServices() async {
         do {
             let provider = try ServicesProvider(apikey: "")
+            try await Task.sleep(nanoseconds: 1_000_000_000)
+
             await MainActor.run {
                 appCoordinator.servicesProvider = provider
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                    self.showSplash = false
-                }
+                showSplash = false
             }
         } catch {
             await MainActor.run {
-                self.initializationError = error
-                self.showSplash = false
+                initializationError = error
+                showSplash = false
             }
         }
     }

@@ -10,22 +10,29 @@ import UIKit
 private enum DeviceMetrics {
     static let baseHeight: CGFloat = 812
     static let baseWidth: CGFloat = 375
+    
+    @MainActor
     static let screenHeight: CGFloat = UIScreen.main.bounds.height
+    
+    @MainActor
     static let screenWidth: CGFloat = UIScreen.main.bounds.width
 }
 
+@MainActor
 extension Int {
     var dfs: CGFloat { CGFloat(self).dfs }
     var dvs: CGFloat { CGFloat(self).dvs }
     var dhs: CGFloat { CGFloat(self).dhs }
 }
 
+@MainActor
 extension Double {
     var dfs: CGFloat { CGFloat(self).dfs }
     var dvs: CGFloat { CGFloat(self).dvs }
     var dhs: CGFloat { CGFloat(self).dhs }
 }
 
+@MainActor
 extension CGFloat {
     
     /// Dynamic Font Size scaled based on screen height.
